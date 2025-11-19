@@ -115,8 +115,8 @@ ipcMain.handle('select-directory', async () => {
  */
 ipcMain.handle('generate-plugin', async (event, opts) => {
   try {
-    await generatePlugin(opts);
-    return { ok: true };
+    const pluginPath = await generatePlugin(opts);
+    return { ok: true, pluginPath };
   } catch (err) {
     return { ok: false, error: err.message || String(err) };
   }
@@ -291,6 +291,8 @@ async function generatePlugin(opts) {
       }
     }
   }
+
+  return pluginDir;
 }
 
 /**

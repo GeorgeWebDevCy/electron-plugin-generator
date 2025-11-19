@@ -139,11 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
       setStatus('Please enter a plugin name.', 'error');
       return;
     }
-    if (!data.outputDir) {
-      setStatus('Please choose an output directory.', 'error');
-      return;
-    }
-
     if (settingsSnippetEnabled) {
       const settingsValidation = validateSettingsSection({ showSuccess: true });
       if (!settingsValidation.valid) {
@@ -158,7 +153,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setStatus('Generating plugin...', 'neutral');
     const result = await window.electronAPI.generatePlugin(data);
     if (result.ok) {
-      setStatus(`Plugin generated successfully in ${data.outputDir}/${data.slug || data.name}`, 'success');
+      const fallbackPath = data.outputDir
+        ? `${data.outputDir}/${data.slug || data.name}`
+        : (data.slug || data.name);
+      const location = result.pluginPath || fallbackPath;
+      setStatus(`Plugin generated successfully in ${location}`, 'success');
     } else {
       setStatus('Error: ' + result.error, 'error');
     }
