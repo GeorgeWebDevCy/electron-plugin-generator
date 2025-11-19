@@ -176,6 +176,23 @@ async function generatePlugin(opts) {
   const outputDir = opts.outputDir || process.cwd();
   const pluginDir = path.join(outputDir, slug);
 
+  // Apply defaults for ownership-related fields.
+  const defaultAuthor = 'George Nicolaou';
+  const defaultAuthorUri = 'https://www.georgenicolaou.me';
+  const pluginBaseUri = 'https://www.georgenicolaou.me/plugins/';
+  const normalizedAuthor = opts.author && opts.author.trim() ? opts.author : defaultAuthor;
+  const normalizedAuthorUri = opts.authorUri && opts.authorUri.trim() ? opts.authorUri : defaultAuthorUri;
+  const normalizedPluginUri =
+    opts.pluginUri && opts.pluginUri.trim()
+      ? opts.pluginUri
+      : `${pluginBaseUri}${slug}/`;
+  const normalizedOpts = {
+    ...opts,
+    author: normalizedAuthor,
+    authorUri: normalizedAuthorUri,
+    pluginUri: normalizedPluginUri
+  };
+
   // Prevent accidentally clobbering an existing non‑empty directory
   try {
     const existing = await fs.readdir(pluginDir);
@@ -214,7 +231,7 @@ async function generatePlugin(opts) {
 
   // Generate file contents
   const mainPhp = generateMainPluginFile({
-    opts,
+    opts: normalizedOpts,
     slug,
     namespace,
     pluginClass,
@@ -226,12 +243,12 @@ async function generatePlugin(opts) {
   });
   const activatorPhp = generateActivationClass(activatorClass);
   const deactivatorPhp = generateDeactivationClass(deactivatorClass);
-  const coreClassPhp = generateCoreClass(pluginClass, loaderClass, adminClass, publicClass, namespace, slug, opts);
+  const coreClassPhp = generateCoreClass(pluginClass, loaderClass, adminClass, publicClass, namespace, slug, normalizedOpts);
   const loaderPhp = generateLoaderClass(loaderClass);
   const adminPhp = generateAdminClass(adminClass, slug);
   const publicPhp = generatePublicClass(publicClass, slug);
-  const readmeTxt = generateReadme(opts, slug);
-  const composerJson = opts.withComposer ? generateComposerJson(opts, slug, namespace) : null;
+  const readmeTxt = generateReadme(normalizedOpts, slug);
+  const composerJson = normalizedOpts.withComposer ? generateComposerJson(normalizedOpts, slug, namespace) : null;
 
   // Write files
   await writeFile(path.join(pluginDir, `${slug}.php`), mainPhp);
@@ -359,7 +376,7 @@ function generateReadme(opts, slug) {
   // The readme follows WordPress.org readme.txt guidelines and includes
   // minimal fields needed by the plugin update checker to extract
   // changelog and version info【123553315052989†L446-L499】.
-  return `=== ${opts.name} ===\n\nContributors: ${opts.author}\nTags: custom\nRequires at least: ${opts.requiresAtLeast}\nTested up to: ${opts.testedUpTo}\nRequires PHP: ${opts.requiresPhp}\nStable tag: ${opts.version}\nLicense: GPLv2 or later\nLicense URI: https://www.gnu.org/licenses/gpl-2.0.html\nUpdate URI: ${opts.repo || opts.pluginUri || ''}\n\n${opts.description}\n\n== Changelog ==\n\n= ${opts.version} =\n* Initial release.\n`;
+  return `=== ${opts.name} ===\n\nContributors: orionaselite\nTags: custom\nRequires at least: ${opts.requiresAtLeast}\nTested up to: ${opts.testedUpTo}\nRequires PHP: ${opts.requiresPhp}\nStable tag: ${opts.version}\nLicense: GPLv2 or later\nLicense URI: https://www.gnu.org/licenses/gpl-2.0.html\nUpdate URI: ${opts.repo || opts.pluginUri || ''}\n\n${opts.description}\n\n== Changelog ==\n\n= ${opts.version} =\n* Initial release.\n`;
 }
 
 function generateComposerJson(opts, slug, namespace) {
