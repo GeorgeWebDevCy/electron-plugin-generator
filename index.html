@@ -3,129 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <title>WordPress Plugin Generator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      max-width: 800px;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    input[type="text"], textarea {
-      width: 100%;
-      padding: 6px;
-      box-sizing: border-box;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .row > div {
-      flex: 1;
-      min-width: 200px;
-    }
-    button {
-      margin-top: 15px;
-      padding: 8px 12px;
-    }
-    #statusArea {
-      margin-top: 15px;
-      font-weight: bold;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>WordPress Plugin Generator</h1>
-  <form id="pluginForm">
-    <label for="name">Plugin Name*</label>
-    <input type="text" id="name" required>
-
-    <label for="slug">Slug (optional)</label>
-    <input type="text" id="slug" placeholder="Leave blank to auto‑generate">
-
-    <label for="description">Description</label>
-    <textarea id="description" placeholder="A custom WordPress plugin."></textarea>
-
-    <div class="row">
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand__logo">WP</div>
       <div>
-        <label for="version">Version</label>
-        <input type="text" id="version" value="1.0.0">
-      </div>
-      <div>
-        <label for="requiresAtLeast">Requires WP</label>
-        <input type="text" id="requiresAtLeast" value="6.0">
-      </div>
-      <div>
-        <label for="testedUpTo">Tested up to</label>
-        <input type="text" id="testedUpTo" value="6.5">
-      </div>
-      <div>
-        <label for="requiresPhp">Requires PHP</label>
-        <input type="text" id="requiresPhp" value="7.4">
+        <p class="brand__title">WordPress Plugin Generator</p>
+        <p class="brand__tagline">Craft production-ready scaffolds faster.</p>
       </div>
     </div>
+  </header>
 
-    <div class="row">
-      <div>
-        <label for="author">Author</label>
-        <input type="text" id="author" value="Your Name">
-      </div>
-      <div>
-        <label for="authorUri">Author URI</label>
-        <input type="text" id="authorUri" value="https://example.com">
-      </div>
-      <div>
-        <label for="pluginUri">Plugin URI</label>
-        <input type="text" id="pluginUri">
-      </div>
-    </div>
+  <main class="app-main">
+    <form id="pluginForm" class="form-layout">
+      <section class="panel-card metadata-panel">
+        <div class="panel-heading">
+          <h2>Plugin metadata</h2>
+          <p>Describe your plugin, compatibility targets, and ownership info.</p>
+        </div>
+        <div class="form-field">
+          <label for="name">Plugin Name*</label>
+          <input type="text" id="name" required>
+        </div>
+        <div class="input-grid auto-fit">
+          <div class="form-field">
+            <label for="slug">Slug (optional)</label>
+            <input type="text" id="slug" placeholder="Leave blank to auto-generate">
+          </div>
+          <div class="form-field">
+            <label for="branch">Repository Branch</label>
+            <input type="text" id="branch" value="main">
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="description">Description</label>
+          <textarea id="description" placeholder="A custom WordPress plugin."></textarea>
+        </div>
+        <p class="section-divider">Compatibility</p>
+        <div class="input-grid auto-fit">
+          <div class="form-field">
+            <label for="version">Version</label>
+            <input type="text" id="version" value="1.0.0">
+          </div>
+          <div class="form-field">
+            <label for="requiresAtLeast">Requires WP</label>
+            <input type="text" id="requiresAtLeast" value="6.0">
+          </div>
+          <div class="form-field">
+            <label for="testedUpTo">Tested up to</label>
+            <input type="text" id="testedUpTo" value="6.5">
+          </div>
+          <div class="form-field">
+            <label for="requiresPhp">Requires PHP</label>
+            <input type="text" id="requiresPhp" value="7.4">
+          </div>
+        </div>
+        <p class="section-divider">Ownership</p>
+        <div class="input-grid auto-fit">
+          <div class="form-field">
+            <label for="author">Author</label>
+            <input type="text" id="author" value="Your Name">
+          </div>
+          <div class="form-field">
+            <label for="authorUri">Author URI</label>
+            <input type="text" id="authorUri" value="https://example.com">
+          </div>
+          <div class="form-field">
+            <label for="pluginUri">Plugin URI</label>
+            <input type="text" id="pluginUri">
+          </div>
+        </div>
+        <p class="section-divider">Repository</p>
+        <div class="form-field">
+          <label for="repo">GitHub Repository URL (optional)</label>
+          <input type="text" id="repo" placeholder="e.g. https://github.com/your-user/my-plugin">
+        </div>
+        <label class="checkbox-field" for="withComposer">
+          <input type="checkbox" id="withComposer">
+          <span>Include composer.json and declare update checker via Composer</span>
+        </label>
+      </section>
 
-    <label for="repo">GitHub Repository URL (optional)</label>
-    <input type="text" id="repo" placeholder="e.g. https://github.com/your-user/my-plugin">
+      <section class="panel-card">
+        <div class="panel-heading">
+          <h2>Optional libraries</h2>
+          <p>Select one or more libraries to scaffold stub code and add Composer dependencies.</p>
+        </div>
+        <div class="checkbox-list">
+          <label class="checkbox-field" for="lib-cmb2">
+            <input type="checkbox" id="lib-cmb2">
+            <span>CMB2 (metabox toolkit)</span>
+          </label>
+          <label class="checkbox-field" for="lib-cron">
+            <input type="checkbox" id="lib-cron">
+            <span>CronPlus (scheduling helper)</span>
+          </label>
+          <label class="checkbox-field" for="lib-widgets">
+            <input type="checkbox" id="lib-widgets">
+            <span>Widgets Helper</span>
+          </label>
+        </div>
+      </section>
 
-    <label for="branch">Repository Branch</label>
-    <input type="text" id="branch" value="main">
-
-    <div>
-      <input type="checkbox" id="withComposer">
-      <label for="withComposer" style="display:inline">Include composer.json and declare update checker via Composer</label>
-    </div>
-
-    <h3>Optional Libraries</h3>
-    <p>Select one or more libraries to scaffold stub code and add Composer dependencies. These correspond to some of the modules available in the WPBP project.</p>
-    <div>
-      <input type="checkbox" id="lib-cmb2">
-      <label for="lib-cmb2" style="display:inline">CMB2 (metabox toolkit)</label><br>
-      <input type="checkbox" id="lib-cron">
-      <label for="lib-cron" style="display:inline">CronPlus (scheduling helper)</label><br>
-      <input type="checkbox" id="lib-widgets">
-      <label for="lib-widgets" style="display:inline">Widgets Helper</label>
-    </div>
-
-    <h3>Snippets</h3>
-    <p>Include optional code snippets for common tasks.</p>
-    <div>
-      <input type="checkbox" id="snippet-settings">
-      <label for="snippet-settings" style="display:inline">Import/Export Settings</label>
-    </div>
-
-    <label for="outputDir">Output Directory*</label>
-    <div style="display:flex; gap:5px; align-items:center;">
-      <input type="text" id="outputDir" placeholder="Choose output folder" style="flex:1" readonly>
-      <button type="button" id="selectDirButton">Browse…</button>
-    </div>
-
-    <button type="submit">Generate Plugin</button>
-  </form>
-  <div id="statusArea"></div>
+      <section class="panel-card">
+        <div class="panel-heading">
+          <h2>Snippets &amp; output</h2>
+          <p>Include optional code snippets and choose a destination folder.</p>
+        </div>
+        <div class="checkbox-list">
+          <label class="checkbox-field" for="snippet-settings">
+            <input type="checkbox" id="snippet-settings">
+            <span>Import/Export Settings snippet</span>
+          </label>
+        </div>
+        <p class="section-divider">Output directory*</p>
+        <div class="input-row">
+          <input type="text" id="outputDir" placeholder="Choose output folder" readonly>
+          <button type="button" class="btn btn-secondary" id="selectDirButton">Browse…</button>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Generate Plugin</button>
+        </div>
+        <div id="statusArea" class="status-message" hidden></div>
+      </section>
+    </form>
+  </main>
 
   <script src="renderer.js"></script>
 </body>

@@ -7,6 +7,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const outputDirInput = document.getElementById('outputDir');
   const statusArea = document.getElementById('statusArea');
 
+  const setStatus = (message = '', variant = '') => {
+    statusArea.textContent = message;
+    statusArea.hidden = !message;
+    const classes = ['status-message'];
+    if (message && variant) {
+      classes.push(`status-${variant}`);
+    }
+    statusArea.className = classes.join(' ');
+  };
+
   selectDirButton.addEventListener('click', async () => {
     const selected = await window.electronAPI.selectDirectory();
     if (selected) {
@@ -16,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    statusArea.textContent = '';
+    setStatus();
     const data = {
       name: document.getElementById('name').value.trim(),
       slug: document.getElementById('slug').value.trim(),
@@ -45,20 +55,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Basic validation: ensure required fields are present
     if (!data.name) {
-      statusArea.textContent = 'Please enter a plugin name.';
+      setStatus('Please enter a plugin name.', 'error');
       return;
     }
     if (!data.outputDir) {
-      statusArea.textContent = 'Please choose an output directory.';
+      setStatus('Please choose an output directory.', 'error');
       return;
     }
 
-    statusArea.textContent = 'Generating plugin...';
+    setStatus('Generating plugin...', 'neutral');
     const result = await window.electronAPI.generatePlugin(data);
     if (result.ok) {
-      statusArea.textContent = `Plugin generated successfully in ${data.outputDir}/${data.slug || data.name}`;
+      setStatus(`Plugin generated successfully in ${data.outputDir}/${data.slug || data.name}`, 'success');
     } else {
-      statusArea.textContent = 'Error: ' + result.error;
+      setStatus('Error: ' + result.error, 'error');
     }
   });
 });
