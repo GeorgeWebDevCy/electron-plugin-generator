@@ -69,6 +69,8 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js')
     }
   });
+  // Start the application maximized so the form has ample space.
+  win.maximize();
   win.loadFile('index.html');
 }
 
