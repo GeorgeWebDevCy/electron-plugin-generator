@@ -33,9 +33,21 @@ const AVAILABLE_LIBRARIES = {
 // external dependencies.
 const AVAILABLE_SNIPPETS = {
   settings: {
-    stubFile: (slug) => {
+    stubFile: (slug, settingsConfig = {}) => {
       const capSlug = slug.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('');
-      return `<?php\n/**\n * Import/Export settings snippet.\n *\n * This class demonstrates how to register admin pages for exporting and\n * importing plugin options. Adjust the logic inside export_settings() and\n * import_settings() to suit your plugin.\n */\nclass ${capSlug}_Settings {\n    public function add_admin_menus() {\n        // Register submenu pages here.\n    }\n    public function export_settings() {\n        // Output settings as JSON or CSV and trigger download.\n    }\n    public function import_settings() {\n        // Handle uploaded file and save settings.\n    }\n}\n`;
+      const escapePhpString = (value) => {
+        if (!value) return '';
+        return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      };
+      const resolvedPageTitle = escapePhpString(settingsConfig.pageTitle || 'Plugin Settings');
+      const resolvedMenuSlug = escapePhpString(settingsConfig.menuSlug || `${slug}-settings`);
+      const resolvedCapability = escapePhpString(settingsConfig.capability || 'manage_options');
+      const resolvedParentMenu = escapePhpString(settingsConfig.parentMenu || 'options-general.php');
+      const formatInput = (settingsConfig.format || 'json').toLowerCase();
+      const normalizedFormat = formatInput.replace(/[^a-z0-9]/g, '') || 'json';
+      const resolvedFormat = escapePhpString(normalizedFormat);
+      const formatLabel = normalizedFormat.toUpperCase();
+      return `<?php\n/**\n * Import/Export settings snippet.\n *\n * This class registers an admin page for exporting and importing plugin options.\n * Customize the render, export, and import methods to fit your data.\n */\nclass ${capSlug}_Settings {\n    protected $page_title = '${resolvedPageTitle}';\n    protected $menu_slug = '${resolvedMenuSlug}';\n    protected $capability = '${resolvedCapability}';\n    protected $parent_menu = '${resolvedParentMenu}';\n    protected $format = '${resolvedFormat}';\n\n    public function register() {\n        add_action( 'admin_menu', array( $this, 'add_admin_menus' ) );\n    }\n\n    public function add_admin_menus() {\n        add_submenu_page(\n            $this->parent_menu,\n            $this->page_title,\n            $this->page_title,\n            $this->capability,\n            $this->menu_slug,\n            array( $this, 'render_settings_page' )\n        );\n    }\n\n    public function render_settings_page() {\n        // Render your admin form for exporting or importing settings.\n    }\n\n    public function export_settings() {\n        // Output settings as ${formatLabel} and trigger download.\n    }\n\n    public function import_settings() {\n        // Handle the uploaded ${formatLabel} file and persist settings.\n    }\n}\n`;
     },
   },
 };
@@ -254,7 +266,7 @@ async function generatePlugin(opts) {
     for (const snippet of opts.snippets) {
       const info = AVAILABLE_SNIPPETS[snippet];
       if (info) {
-        const stubContent = info.stubFile(slug);
+        const stubContent = info.stubFile(slug, snippet === 'settings' ? (opts.settingsConfig || {}) : undefined);
         const fileName = `class-${slug}-${snippet}.php`;
         await writeFile(path.join(pluginDir, 'includes', fileName), stubContent);
       }

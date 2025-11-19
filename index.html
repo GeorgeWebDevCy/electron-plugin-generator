@@ -109,14 +109,56 @@
 
       <section class="panel-card">
         <div class="panel-heading">
-          <h2>Snippets &amp; output</h2>
-          <p>Include optional code snippets and choose a destination folder.</p>
+          <h2>Snippets</h2>
+          <p>Include optional code snippets to jump-start common tasks.</p>
         </div>
         <div class="checkbox-list">
           <label class="checkbox-field" for="snippet-settings">
             <input type="checkbox" id="snippet-settings">
             <span>Import/Export Settings snippet</span>
           </label>
+        </div>
+      </section>
+
+      <section class="panel-card settings-panel">
+        <div class="panel-heading">
+          <h2>Settings panel</h2>
+          <p>Describe the admin page created by the settings snippet.</p>
+        </div>
+        <p class="helper-text">Fields below are required whenever the Import/Export Settings snippet is enabled.</p>
+        <div class="input-grid settings-grid">
+          <div class="form-field">
+            <label for="settingsPageTitle">Settings page title*</label>
+            <input type="text" id="settingsPageTitle" placeholder="Plugin Settings">
+          </div>
+          <div class="form-field">
+            <label for="settingsMenuSlug">Menu slug*</label>
+            <input type="text" id="settingsMenuSlug" placeholder="plugin-settings">
+          </div>
+          <div class="form-field">
+            <label for="settingsCapability">Capability*</label>
+            <input type="text" id="settingsCapability" value="manage_options">
+          </div>
+          <div class="form-field">
+            <label for="settingsParentMenu">Parent menu slug*</label>
+            <input type="text" id="settingsParentMenu" value="options-general.php">
+            <p class="helper-text">Use a core slug like <code>options-general.php</code> or <code>tools.php</code>.</p>
+          </div>
+          <div class="form-field">
+            <label for="settingsFormat">Import/Export format*</label>
+            <select id="settingsFormat">
+              <option value="json">JSON</option>
+              <option value="csv">CSV</option>
+            </select>
+          </div>
+        </div>
+        <div id="settingsStatus" class="status-message status-inline" hidden></div>
+      </section>
+
+      <section class="panel-card output-panel">
+        <div class="panel-heading">
+          <h2>Output &amp; generation</h2>
+          <p>Choose where the plugin should be generated and trigger the build.</p>
         </div>
         <p class="section-divider">Output directory*</p>
         <div class="input-row">
