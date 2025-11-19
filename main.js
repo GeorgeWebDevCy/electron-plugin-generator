@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
+const { execFile } = require('child_process');
 
 // Define optional libraries and snippets supported by the generator.
 // Each entry specifies a Composer dependency and a stub file generator.
@@ -115,8 +116,26 @@ ipcMain.handle('select-directory', async () => {
  */
 ipcMain.handle('generate-plugin', async (event, opts) => {
   try {
+    const slug = opts.slug && opts.slug.trim() !== '' ? opts.slug : slugify(opts.name);
+
+    // If we're going to create a GitHub repo and have a username,
+    // pre-populate the repo URL so generated files can reference it.
+    if (opts.createGithubRepo && opts.githubUsername && !opts.repo) {
+      opts.repo = `https://github.com/${opts.githubUsername}/${slug}`;
+    }
+
     const pluginPath = await generatePlugin(opts);
-    return { ok: true, pluginPath };
+
+    let repoUrl;
+    if (opts.createGithubRepo) {
+      repoUrl = await createGithubRepoAndPush({
+        slug,
+        pluginDir: pluginPath,
+        options: opts
+      });
+    }
+
+    return { ok: true, pluginPath, repoUrl };
   } catch (err) {
     return { ok: false, error: err.message || String(err) };
   }
@@ -293,6 +312,100 @@ async function generatePlugin(opts) {
   }
 
   return pluginDir;
+}
+
+/**
+ * Helper: run a git command in the given working directory.
+ *
+ * @param {string} cwd Working directory
+ * @param {string[]} args Git arguments
+ */
+function runGit(cwd, args) {
+  return new Promise((resolve, reject) => {
+    execFile('git', args, { cwd }, (error, stdout, stderr) => {
+      if (error) {
+        const details = (stderr || stdout || error.message || '').toString();
+        reject(new Error(`git ${args.join(' ')} failed: ${details}`));
+      } else {
+        resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
+      }
+    });
+  });
+}
+
+/**
+ * Create a GitHub repository for the generated plugin, initialize a local
+ * git repository in the plugin directory, and push the initial commit.
+ *
+ * Requires a personal access token in the GITHUB_TOKEN environment variable.
+ *
+ * @param {object} params
+ * @param {string} params.slug Plugin slug / repository name
+ * @param {string} params.pluginDir Absolute path to the generated plugin directory
+ * @param {object} params.options Original options object
+ */
+async function createGithubRepoAndPush({ slug, pluginDir, options }) {
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) {
+    throw new Error('GITHUB_TOKEN environment variable is not set; cannot create GitHub repository.');
+  }
+
+  const githubApiHeaders = {
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/vnd.github+json',
+    'User-Agent': 'electron-plugin-generator'
+  };
+
+  // Determine the GitHub username: prefer the value from the UI, otherwise
+  // query the /user endpoint using the token.
+  let githubUsername = (options.githubUsername || '').trim();
+  if (!githubUsername) {
+    const userRes = await fetch('https://api.github.com/user', {
+      method: 'GET',
+      headers: githubApiHeaders
+    });
+    if (!userRes.ok) {
+      throw new Error(`Failed to resolve GitHub username (status ${userRes.status}).`);
+    }
+    const userJson = await userRes.json();
+    githubUsername = userJson.login;
+  }
+
+  // Create the repository via GitHub API.
+  const repoPayload = {
+    name: slug,
+    description: options.description || '',
+    homepage: options.pluginUri || undefined,
+    private: false
+  };
+
+  const repoRes = await fetch('https://api.github.com/user/repos', {
+    method: 'POST',
+    headers: githubApiHeaders,
+    body: JSON.stringify(repoPayload)
+  });
+
+  if (!repoRes.ok) {
+    const bodyText = await repoRes.text();
+    throw new Error(`Failed to create GitHub repository (status ${repoRes.status}): ${bodyText}`);
+  }
+
+  const repoJson = await repoRes.json();
+  const remoteUrl = repoJson.clone_url || `https://github.com/${githubUsername}/${slug}.git`;
+
+  // Initialize local git repository and push to GitHub.
+  await runGit(pluginDir, ['init']);
+  await runGit(pluginDir, ['add', '.']);
+  await runGit(pluginDir, ['commit', '-m', 'Initial commit']);
+  try {
+    await runGit(pluginDir, ['branch', '-M', 'main']);
+  } catch {
+    // Ignore branch rename errors; the branch may already be 'main'.
+  }
+  await runGit(pluginDir, ['remote', 'add', 'origin', remoteUrl]);
+  await runGit(pluginDir, ['push', '-u', 'origin', 'main']);
+
+  return repoJson.html_url || `https://github.com/${githubUsername}/${slug}`;
 }
 
 /**

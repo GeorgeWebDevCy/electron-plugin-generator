@@ -120,6 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
       requiresPhp: document.getElementById('requiresPhp').value.trim(),
       repo: document.getElementById('repo').value.trim(),
       branch: document.getElementById('branch').value.trim() || 'main',
+      createGithubRepo: document.getElementById('createGithubRepo').checked,
+      githubUsername: document.getElementById('githubUsername').value.trim(),
       withComposer: document.getElementById('withComposer').checked,
       outputDir: outputDirInput.value.trim()
       ,libraries: []

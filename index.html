@@ -80,6 +80,14 @@
           <label for="repo">GitHub Repository URL (optional)</label>
           <input type="text" id="repo" placeholder="e.g. https://github.com/your-user/my-plugin">
         </div>
+        <label class="checkbox-field" for="createGithubRepo">
+          <input type="checkbox" id="createGithubRepo">
+          <span>Automatically create GitHub repository for this plugin</span>
+        </label>
+        <div class="form-field">
+          <label for="githubUsername">GitHub username (optional)</label>
+          <input type="text" id="githubUsername" placeholder="If empty, uses GITHUB_TOKEN user">
+        </div>
         <label class="checkbox-field" for="withComposer">
           <input type="checkbox" id="withComposer">
           <span>Include composer.json and declare update checker via Composer</span>
